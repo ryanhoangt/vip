@@ -28,7 +28,7 @@ setup(
     'omegaconf>=2.3.0',
     'hydra-core>=1.3.2',
     'setuptools<81',  # gdown imports pkg_resources, removed in setuptools 81+
-    'pillow==9.0.1',
+    'pillow>=10.0.0',
     'opencv-python',
     'matplotlib',
     'flatten_dict',
