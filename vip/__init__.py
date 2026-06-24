@@ -11,7 +11,7 @@ import omegaconf
 import hydra
 import gdown
 import torch
-from torch.hub import load_state_dict_from_url
+import urllib.request
 import copy
 
 VALID_ARGS = ["_target_", "device", "lr", "hidden_dim", "size", "l2weight", "l1weight", "num_negatives"]
@@ -36,7 +36,6 @@ def load_vip(modelid='resnet50'):
 
     if not os.path.exists(os.path.join(home, modelid)):
         os.makedirs(os.path.join(home, modelid))
-    folderpath = os.path.join(home, modelid)
     modelpath = os.path.join(home, modelid, "model.pt")
     configpath = os.path.join(home, modelid, "config.yaml")
     
@@ -47,9 +46,17 @@ def load_vip(modelid='resnet50'):
             configurl = "https://pytorch.s3.amazonaws.com/models/rl/vip/config.yaml"
         else:
             raise NameError('Invalid Model ID')
+        # NOTE: download the raw files only; do NOT use load_state_dict_from_url
+        # here. It internally torch.load()s the checkpoint without map_location,
+        # which crashes on CPU-only machines ("deserialize ... on a CUDA device"),
+        # and it cannot handle the plain-YAML config at all. Either failure trips
+        # the bare except below and silently falls back to the (stale) G-Drive
+        # backup, yielding the wrong config (missing 'agent' key). The weights are
+        # loaded properly with map_location further down.
         if not os.path.exists(modelpath):
-            load_state_dict_from_url(modelurl, folderpath)
-            load_state_dict_from_url(configurl, folderpath)
+            urllib.request.urlretrieve(modelurl, modelpath)
+        if not os.path.exists(configpath):
+            urllib.request.urlretrieve(configurl, configpath)
     except: 
         if modelid == "resnet50":
             modelurl = 'https://drive.google.com/uc?id=1LuCFIV44xTZ0GLmLwk36BRsr9KjCW_yj'
