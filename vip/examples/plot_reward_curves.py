@@ -110,6 +110,6 @@ def main(reps):
         
            
 if __name__ == '__main__':
-    reps = ['vip', 'resnet', 'r3m']
+    reps = ['vip', 'resnet']
     # reps = ['vip', 'r3m', 'resnet'] # requires installing r3m
     main(reps)
